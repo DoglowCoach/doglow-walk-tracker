@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>반려견 산책 트래커</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      * { box-sizing: border-box; }
+      :root {
+        --hud-bg: #040a16;
+        --hud-panel: rgba(11, 21, 39, 0.82);
+        --hud-panel-strong: rgba(9, 18, 34, 0.92);
+        --hud-border: rgba(0, 210, 255, 0.35);
+        --hud-cyan: #65f2ff;
+        --hud-blue: #4c8dff;
+        --hud-orange: #ff7a1a;
+        --hud-orange-strong: #ff4f00;
+        --hud-text: #d9f7ff;
+        --hud-muted: #7ea3b8;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--hud-text);
+        background:
+          radial-gradient(900px 500px at 85% 10%, rgba(76, 141, 255, 0.22), transparent 60%),
+          radial-gradient(800px 450px at 12% 18%, rgba(255, 122, 26, 0.2), transparent 60%),
+          linear-gradient(180deg, #030914 0%, #020611 100%);
+      }
+      .screen { min-height: 100vh; padding: 24px 16px 32px; }
+      .top-right-actions {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 30;
+      }
+      .intro-btn {
+        border: 1px solid rgba(101, 242, 255, 0.45);
+        color: var(--hud-cyan);
+        background: rgba(9, 24, 42, 0.88);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+      }
+      .home {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+      }
+      .home-logo {
+        width: min(340px, 80vw);
+        height: auto;
+        border-radius: 14px;
+        border: 1px solid rgba(101, 242, 255, 0.22);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+      }
+      .title {
+        margin: 0;
+        font-size: 36px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-shadow: 0 0 14px rgba(101, 242, 255, 0.45);
+      }
+      .subtitle { margin: 0; color: var(--hud-muted); font-size: 14px; }
+      .hud-frame {
+        width: min(430px, 100%);
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--hud-border);
+        background: linear-gradient(155deg, rgba(13, 27, 50, 0.9), rgba(8, 18, 34, 0.78));
+        box-shadow:
+          0 0 0 1px rgba(101, 242, 255, 0.08) inset,
+          0 16px 40px rgba(0, 0, 0, 0.45),
+          0 0 36px rgba(76, 141, 255, 0.2);
+      }
+      .start-btn,
+      .history-btn {
+        width: 100%;
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 18px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.03em;
+      }
+      .start-btn {
+        margin-top: 12px;
+        background: linear-gradient(135deg, var(--hud-orange), var(--hud-orange-strong));
+        color: #fff;
+        box-shadow: 0 10px 28px rgba(255, 79, 0, 0.34);
+      }
+      .history-btn {
+        margin-top: 10px;
+        background: linear-gradient(135deg, #19385f, #10263f);
+        color: var(--hud-cyan);
+        border: 1px solid rgba(101, 242, 255, 0.3);
+      }
+      .card {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(9, 22, 40, 0.78);
+        border: 1px solid rgba(101, 242, 255, 0.2);
+      }
+      .count-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 10px;
+      }
+      .round-btn {
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 1px solid rgba(101, 242, 255, 0.4);
+        background: rgba(14, 30, 52, 0.9);
+        color: var(--hud-cyan);
+        font-size: 22px;
+        cursor: pointer;
+      }
+      .count { min-width: 44px; font-size: 30px; text-align: center; font-weight: 700; }
+
+      .tracking-header, .summary-card, .action-bar, #map {
+        width: min(980px, 100%);
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .tracking-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .status { font-size: 13px; color: var(--hud-muted); }
+      .end-btn {
+        border: 1px solid rgba(255, 122, 26, 0.56);
+        border-radius: 999px;
+        padding: 9px 14px;
+        color: #fff;
+        background: linear-gradient(135deg, #ff7a1a, #c53b00);
+        cursor: pointer;
+      }
+      .summary-card {
+        margin-bottom: 10px;
+        background: var(--hud-panel);
+        border: 1px solid var(--hud-border);
+        border-radius: 14px;
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .summary-item {
+        background: rgba(5, 15, 30, 0.75);
+        border: 1px solid rgba(101, 242, 255, 0.16);
+        border-radius: 11px;
+        padding: 8px 10px;
+      }
+      .summary-item .label { font-size: 11px; color: var(--hud-muted); }
+      .summary-item .value { margin-top: 2px; font-size: 17px; font-weight: 700; color: var(--hud-cyan); }
+      .action-bar { margin-bottom: 10px; display: flex; gap: 10px; }
+      .point-btn {
+        border: 1px solid rgba(101, 242, 255, 0.2);
+        border-radius: 999px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-weight: 700;
+        color: #fff;
+      }
+      .point-btn.poop { background: linear-gradient(135deg, #9c6731, #5d3919); }
+      .point-btn.anxious { background: linear-gradient(135deg, #3c75ff, #1a2fae); }
+      #map {
+        height: calc(100vh - 280px);
+        border-radius: 16px;
+        border: 1px solid var(--hud-border);
+        overflow: hidden;
+        box-shadow: 0 0 26px rgba(76, 141, 255, 0.22);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.58);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 20;
+      }
+      .modal-card {
+        width: min(980px, 100%);
+        background: var(--hud-panel-strong);
+        border: 1px solid var(--hud-border);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 0 40px rgba(76, 141, 255, 0.25);
+      }
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .close-btn {
+        border: 1px solid rgba(101, 242, 255, 0.4);
+        color: var(--hud-cyan);
+        background: rgba(10, 28, 48, 0.9);
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      #historyMap {
+        width: 100%;
+        height: min(56vh, 520px);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(101, 242, 255, 0.3);
+      }
+      .history-meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .meta-item {
+        background: rgba(7, 19, 35, 0.75);
+        border: 1px solid rgba(101, 242, 255, 0.16);
+        border-radius: 10px;
+        padding: 8px;
+      }
+      .meta-item .label { font-size: 11px; color: var(--hud-muted); }
+      .meta-item .value { margin-top: 3px; font-size: 16px; font-weight: 700; color: var(--hud-cyan); }
+      .hidden { display: none; }
+
+      @media (max-width: 900px) {
+        .summary-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .history-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #map { height: calc(100vh - 360px); }
+      }
+      @media (max-width: 640px) {
+        .title { font-size: 28px; }
+        .summary-card { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="homeScreen" class="screen home">
+      <div class="top-right-actions">
+        <button id="creatorIntroBtn" class="intro-btn">만든 사람 소개</button>
+      </div>
+      <img src="./doglow-logo.png" alt="DOGLOW 로고" class="home-logo" />
+      <h1 class="title">Walk Tracker HUD</h1>
+      <p class="subtitle">DOGLOW STAY CALM</p>
+      <section class="hud-frame">
+        <button id="startWalkBtn" class="start-btn">산책 시작</button>
+        <button id="historyBtn" class="history-btn">종합 경로 보기</button>
+        <section class="card">
+          <div style="font-weight: 600; color: var(--hud-muted);">차분하게 걷기(STAY CALM) 성공 횟수</div>
+          <div class="count-row">
+            <button id="decreaseBtn" class="round-btn">-</button>
+            <span id="stayCalmCount" class="count">0</span>
+            <button id="increaseBtn" class="round-btn">+</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <section id="trackingScreen" class="screen hidden">
+      <div class="tracking-header">
+        <div>
+          <h2 style="margin: 0 0 4px; letter-spacing: 0.03em;">실시간 경로 추적중</h2>
+          <div id="gpsStatus" class="status">GPS 준비중...</div>
+        </div>
+        <button id="endWalkBtn" class="end-btn">종료</button>
+      </div>
+      <div class="summary-card">
+        <div class="summary-item"><div class="label">산책 날짜</div><div id="walkDate" class="value">-</div></div>
+        <div class="summary-item"><div class="label">산책 시간</div><div id="walkTime" class="value">00:00</div></div>
+        <div class="summary-item"><div class="label">이동 거리</div><div id="walkDistance" class="value">0.00 km</div></div>
+        <div class="summary-item"><div class="label">배변 체크</div><div id="poopCount" class="value">0회</div></div>
+        <div class="summary-item"><div class="label">불안/흥분 체크</div><div id="anxiousCount" class="value">0회</div></div>
+      </div>
+      <div class="action-bar">
+        <button id="poopPointBtn" class="point-btn poop">배변 체크</button>
+        <button id="anxiousPointBtn" class="point-btn anxious">불안/흥분 체크</button>
+      </div>
+      <div id="map"></div>
+    </section>
+
+    <section id="historyModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 style="margin: 0; letter-spacing: 0.04em;">누적 경로 종합 뷰</h3>
+          <button id="closeHistoryBtn" class="close-btn">닫기</button>
+        </div>
+        <div id="historyMap"></div>
+        <div class="history-meta">
+          <div class="meta-item"><div class="label">총 산책 수</div><div id="historyWalks" class="value">0회</div></div>
+          <div class="meta-item"><div class="label">누적 거리</div><div id="historyDistance" class="value">0.00 km</div></div>
+          <div class="meta-item"><div class="label">총 배변 체크</div><div id="historyPoop" class="value">0회</div></div>
+          <div class="meta-item"><div class="label">총 불안/흥분 체크</div><div id="historyAnxious" class="value">0회</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="creatorModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 style="margin: 0; letter-spacing: 0.04em;">만든 사람 소개</h3>
+          <button id="closeCreatorBtn" class="close-btn">닫기</button>
+        </div>
+        <div style="color: var(--hud-muted); line-height: 1.7; padding: 4px 2px;">
+          Instagram @dog_appa
+        </div>
+      </div>
+    </section>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      const STORAGE_KEY = "DOG_WALK_HISTORY_V1";
+      const homeScreen = document.getElementById("homeScreen");
+      const trackingScreen = document.getElementById("trackingScreen");
+      const historyModal = document.getElementById("historyModal");
+      const creatorModal = document.getElementById("creatorModal");
+      const startWalkBtn = document.getElementById("startWalkBtn");
+      const historyBtn = document.getElementById("historyBtn");
+      const creatorIntroBtn = document.getElementById("creatorIntroBtn");
+      const closeCreatorBtn = document.getElementById("closeCreatorBtn");
+      const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+      const endWalkBtn = document.getElementById("endWalkBtn");
+      const gpsStatus = document.getElementById("gpsStatus");
+      const poopPointBtn = document.getElementById("poopPointBtn");
+      const anxiousPointBtn = document.getElementById("anxiousPointBtn");
+      const walkDate = document.getElementById("walkDate");
+      const walkTime = document.getElementById("walkTime");
+      const walkDistance = document.getElementById("walkDistance");
+      const poopCount = document.getElementById("poopCount");
+      const anxiousCount = document.getElementById("anxiousCount");
+      const stayCalmCount = document.getElementById("stayCalmCount");
+      const increaseBtn = document.getElementById("increaseBtn");
+      const decreaseBtn = document.getElementById("decreaseBtn");
+      const historyWalks = document.getElementById("historyWalks");
+      const historyDistance = document.getElementById("historyDistance");
+      const historyPoop = document.getElementById("historyPoop");
+      const historyAnxious = document.getElementById("historyAnxious");
+
+      let calmCount = 0;
+      let map;
+      let marker;
+      let pathLine;
+      let historyMap;
+      let historyLayers = [];
+      let watchId = null;
+      let timerId = null;
+      let lastPosition = null;
+      let startTime = null;
+      let elapsedSeconds = 0;
+      let totalDistanceMeters = 0;
+      let poopEventCount = 0;
+      let anxiousEventCount = 0;
+      let eventMarkers = [];
+      const path = [];
+
+      function updateCount() { stayCalmCount.textContent = String(calmCount); }
+      increaseBtn.addEventListener("click", () => { calmCount += 1; updateCount(); });
+      decreaseBtn.addEventListener("click", () => { calmCount = Math.max(0, calmCount - 1); updateCount(); });
+
+      function formatElapsed(seconds) {
+        const min = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const sec = String(seconds % 60).padStart(2, "0");
+        return `${min}:${sec}`;
+      }
+
+      function haversineMeters(from, to) {
+        const R = 6371000;
+        const toRad = value => (value * Math.PI) / 180;
+        const dLat = toRad(to[0] - from[0]);
+        const dLng = toRad(to[1] - from[1]);
+        const lat1 = toRad(from[0]);
+        const lat2 = toRad(to[0]);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
+      function updateWalkSummary() {
+        walkTime.textContent = formatElapsed(elapsedSeconds);
+        walkDistance.textContent = `${(totalDistanceMeters / 1000).toFixed(2)} km`;
+        poopCount.textContent = `${poopEventCount}회`;
+        anxiousCount.textContent = `${anxiousEventCount}회`;
+      }
+
+      function resetWalkMetrics() {
+        path.length = 0;
+        lastPosition = null;
+        elapsedSeconds = 0;
+        totalDistanceMeters = 0;
+        poopEventCount = 0;
+        anxiousEventCount = 0;
+        startTime = new Date();
+        walkDate.textContent = startTime.toLocaleString("ko-KR", {
+          year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+        });
+        updateWalkSummary();
+      }
+
+      function startWalkTimer() {
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => { elapsedSeconds += 1; updateWalkSummary(); }, 1000);
+      }
+
+      function initMap() {
+        if (map) return;
+        map = L.map("map", { zoomControl: false });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+        map.setView([37.5665, 126.978], 16);
+        pathLine = L.polyline([], { color: "#ff6b00", weight: 6, opacity: 0.95 }).addTo(map);
+      }
+
+      function startTracking() {
+        if (!navigator.geolocation) {
+          gpsStatus.textContent = "이 브라우저는 위치 추적을 지원하지 않습니다.";
+          return;
+        }
+        gpsStatus.textContent = "GPS 연결중...";
+        watchId = navigator.geolocation.watchPosition(
+          position => {
+            const point = [position.coords.latitude, position.coords.longitude];
+            const prevPoint = path.length > 0 ? path[path.length - 1] : null;
+            lastPosition = point;
+            if (prevPoint) {
+              const segment = haversineMeters(prevPoint, point);
+              if (segment < 150) totalDistanceMeters += segment;
+            }
+            path.push(point);
+            if (!marker) marker = L.marker(point).addTo(map);
+            else marker.setLatLng(point);
+            pathLine.setLatLngs(path);
+            map.setView(point, 18);
+            updateWalkSummary();
+            gpsStatus.textContent = `추적중 · 정확도 ${Math.round(position.coords.accuracy)}m`;
+          },
+          error => {
+            if (error.code === 1) gpsStatus.textContent = "위치 권한이 거부되었습니다. 브라우저 권한을 허용해주세요.";
+            else gpsStatus.textContent = "GPS 신호를 찾는 중입니다...";
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+      }
+
+      function stopTracking() {
+        if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+        if (timerId) { clearInterval(timerId); timerId = null; }
+      }
+
+      function addEventPoint(type) {
+        if (!map || !lastPosition) {
+          gpsStatus.textContent = "아직 위치를 받지 못했습니다. 잠시 후 다시 눌러주세요.";
+          return;
+        }
+        const config = type === "poop"
+          ? { emoji: "P", label: "배변 포인트", color: "#8b5a2b" }
+          : { emoji: "!", label: "불안/흥분 포인트", color: "#4461ff" };
+        const icon = L.divIcon({
+          className: "event-point",
+          html: `<div style="background:${config.color};color:#fff;border-radius:999px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.25)">${config.emoji}</div>`,
+          iconSize: [28, 28], iconAnchor: [14, 14],
+        });
+        if (type === "poop") poopEventCount += 1;
+        else anxiousEventCount += 1;
+        updateWalkSummary();
+        const eventMarker = L.marker(lastPosition, { icon }).addTo(map).bindPopup(config.label);
+        eventMarkers.push(eventMarker);
+      }
+
+      function getHistory() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+        catch { return []; }
+      }
+
+      function saveCurrentWalk() {
+        if (path.length < 2 || !startTime) return;
+        const history = getHistory();
+        history.unshift({
+          startedAt: startTime.toISOString(),
+          elapsedSeconds,
+          totalDistanceMeters,
+          poopEventCount,
+          anxiousEventCount,
+          path,
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 30)));
+      }
+
+      function initHistoryMap() {
+        if (historyMap) return;
+        historyMap = L.map("historyMap", { zoomControl: false });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(historyMap);
+        historyMap.setView([37.5665, 126.978], 12);
+      }
+
+      function renderHistoryOverview() {
+        const history = getHistory();
+        initHistoryMap();
+        historyLayers.forEach(layer => historyMap.removeLayer(layer));
+        historyLayers = [];
+
+        let totalMeters = 0;
+        let totalPoop = 0;
+        let totalAnxious = 0;
+        const bounds = [];
+
+        history.forEach((walk, index) => {
+          totalMeters += walk.totalDistanceMeters || 0;
+          totalPoop += walk.poopEventCount || 0;
+          totalAnxious += walk.anxiousEventCount || 0;
+          if (!walk.path || walk.path.length < 2) return;
+          const hue = 15 + ((index * 35) % 260);
+          const layer = L.polyline(walk.path, {
+            color: `hsl(${hue}, 95%, 58%)`,
+            weight: 4,
+            opacity: 0.8,
+          }).addTo(historyMap);
+          historyLayers.push(layer);
+          walk.path.forEach(point => bounds.push(point));
+        });
+
+        historyWalks.textContent = `${history.length}회`;
+        historyDistance.textContent = `${(totalMeters / 1000).toFixed(2)} km`;
+        historyPoop.textContent = `${totalPoop}회`;
+        historyAnxious.textContent = `${totalAnxious}회`;
+
+        if (bounds.length > 0) historyMap.fitBounds(bounds, { padding: [20, 20] });
+        setTimeout(() => historyMap.invalidateSize(), 60);
+      }
+
+      startWalkBtn.addEventListener("click", () => {
+        homeScreen.classList.add("hidden");
+        trackingScreen.classList.remove("hidden");
+        initMap();
+        resetWalkMetrics();
+        if (pathLine) pathLine.setLatLngs([]);
+        if (marker) { map.removeLayer(marker); marker = null; }
+        eventMarkers.forEach(m => map.removeLayer(m));
+        eventMarkers = [];
+        startWalkTimer();
+        startTracking();
+        setTimeout(() => map.invalidateSize(), 200);
+      });
+
+      poopPointBtn.addEventListener("click", () => addEventPoint("poop"));
+      anxiousPointBtn.addEventListener("click", () => addEventPoint("anxious"));
+
+      endWalkBtn.addEventListener("click", () => {
+        stopTracking();
+        saveCurrentWalk();
+        homeScreen.classList.remove("hidden");
+        trackingScreen.classList.add("hidden");
+      });
+
+      historyBtn.addEventListener("click", () => {
+        historyModal.classList.remove("hidden");
+        renderHistoryOverview();
+      });
+
+      closeHistoryBtn.addEventListener("click", () => {
+        historyModal.classList.add("hidden");
+      });
+
+      creatorIntroBtn.addEventListener("click", () => {
+        creatorModal.classList.remove("hidden");
+      });
+
+      closeCreatorBtn.addEventListener("click", () => {
+        creatorModal.classList.add("hidden");
+      });
+    </script>
+  </body>
+</html>
