@@ -114,6 +114,58 @@
         background: rgba(9, 22, 40, 0.78);
         border: 1px solid rgba(101, 242, 255, 0.2);
       }
+      .challenge-card {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(9, 22, 40, 0.78);
+        border: 1px solid rgba(101, 242, 255, 0.2);
+      }
+      .challenge-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .challenge-title {
+        font-size: 13px;
+        color: var(--hud-muted);
+        font-weight: 700;
+      }
+      .challenge-streak {
+        font-size: 13px;
+        color: var(--hud-cyan);
+        font-weight: 700;
+      }
+      .challenge-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 7px;
+      }
+      .challenge-day {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+        border: 1px solid rgba(101, 242, 255, 0.3);
+        background: rgba(8, 18, 35, 0.75);
+        color: var(--hud-muted);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+      .challenge-day.done {
+        background: linear-gradient(135deg, #00c9ff, #00f0aa);
+        border-color: rgba(101, 242, 255, 0.65);
+        color: #072126;
+        box-shadow: 0 0 12px rgba(0, 240, 170, 0.35);
+      }
+      .challenge-note {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--hud-muted);
+      }
       .count-row {
         display: flex;
         align-items: center;
@@ -146,10 +198,13 @@
       .end-btn {
         border: 1px solid rgba(255, 122, 26, 0.56);
         border-radius: 999px;
-        padding: 9px 14px;
+        padding: 14px 20px;
         color: #fff;
         background: linear-gradient(135deg, #ff7a1a, #c53b00);
         cursor: pointer;
+        min-height: 56px;
+        font-size: 18px;
+        font-weight: 700;
       }
       .summary-card {
         margin-bottom: 10px;
@@ -186,6 +241,14 @@
         border: 1px solid var(--hud-border);
         overflow: hidden;
         box-shadow: 0 0 26px rgba(76, 141, 255, 0.22);
+      }
+      .leaflet-popup-content-wrapper {
+        background: rgba(255, 255, 255, 0.95);
+        color: #1f2937;
+        border-radius: 10px;
+      }
+      .leaflet-popup-tip {
+        background: rgba(255, 255, 255, 0.95);
       }
 
       .modal {
@@ -242,6 +305,184 @@
       .meta-item .label { font-size: 11px; color: var(--hud-muted); }
       .meta-item .value { margin-top: 3px; font-size: 16px; font-weight: 700; color: var(--hud-cyan); }
       .hidden { display: none; }
+      .cause-modal {
+        width: min(360px, 92vw);
+        background: rgba(8, 18, 34, 0.96);
+        border: 1px solid rgba(101, 242, 255, 0.35);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+        transform: scale(0.96);
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        will-change: transform, opacity;
+      }
+      .cause-modal.open {
+        transform: scale(1);
+        opacity: 1;
+      }
+      .cause-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--hud-cyan);
+        margin-bottom: 10px;
+      }
+      .cause-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .cause-btn {
+        border: 1px solid rgba(101, 242, 255, 0.25);
+        border-radius: 10px;
+        padding: 10px 8px;
+        background: rgba(11, 26, 46, 0.9);
+        color: var(--hud-text);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .cause-btn:last-child {
+        grid-column: 1 / -1;
+      }
+      .cause-close {
+        margin-top: 8px;
+        width: 100%;
+        border: 1px solid rgba(101, 242, 255, 0.3);
+        border-radius: 10px;
+        padding: 8px;
+        background: rgba(8, 20, 36, 0.9);
+        color: var(--hud-muted);
+        cursor: pointer;
+      }
+      .result-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+      }
+      .save-image-btn {
+        border: 1px solid rgba(101, 242, 255, 0.45);
+        color: var(--hud-cyan);
+        background: rgba(9, 24, 42, 0.88);
+        border-radius: 10px;
+        padding: 9px 12px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .walk-result-frame {
+        width: min(420px, 100%);
+        aspect-ratio: 1 / 1;
+        margin: 0 auto;
+        border-radius: 14px;
+        border: 1px solid rgba(101, 242, 255, 0.28);
+        background:
+          radial-gradient(450px 260px at 85% 15%, rgba(76, 141, 255, 0.22), transparent 60%),
+          radial-gradient(420px 240px at 12% 18%, rgba(255, 122, 26, 0.2), transparent 60%),
+          linear-gradient(180deg, #030914 0%, #020611 100%);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+      }
+      .result-brand {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: var(--hud-cyan);
+      }
+      .result-tag {
+        font-size: 12px;
+        color: var(--hud-muted);
+        margin-top: 2px;
+      }
+      .result-title {
+        margin-top: 12px;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .result-grid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .result-item {
+        background: rgba(7, 19, 35, 0.78);
+        border: 1px solid rgba(101, 242, 255, 0.18);
+        border-radius: 10px;
+        padding: 8px;
+      }
+      .result-item .k {
+        font-size: 11px;
+        color: var(--hud-muted);
+      }
+      .result-item .v {
+        margin-top: 3px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--hud-text);
+      }
+      .result-footer {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid rgba(101, 242, 255, 0.22);
+      }
+      .verify-form {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(101, 242, 255, 0.22);
+        background: rgba(8, 20, 36, 0.7);
+      }
+      .verify-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--hud-cyan);
+        margin-bottom: 8px;
+      }
+      .verify-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .verify-label {
+        font-size: 12px;
+        color: var(--hud-muted);
+      }
+      .verify-input,
+      .verify-textarea {
+        width: 100%;
+        border: 1px solid rgba(101, 242, 255, 0.22);
+        border-radius: 10px;
+        background: rgba(7, 18, 32, 0.85);
+        color: var(--hud-text);
+        padding: 10px;
+        font-size: 14px;
+      }
+      .verify-textarea {
+        min-height: 84px;
+        resize: vertical;
+      }
+      .verify-submit-btn {
+        width: 100%;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #fff;
+        background: linear-gradient(135deg, var(--hud-orange), var(--hud-orange-strong));
+      }
+      .verify-status {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--hud-muted);
+      }
 
       @media (max-width: 900px) {
         .summary-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -251,6 +492,16 @@
       @media (max-width: 640px) {
         .title { font-size: 28px; }
         .summary-card { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .start-btn {
+          min-height: 64px;
+          font-size: 22px;
+          padding: 18px 20px;
+        }
+        .end-btn {
+          min-height: 64px;
+          font-size: 20px;
+          padding: 16px 22px;
+        }
       }
     </style>
   </head>
@@ -272,6 +523,14 @@
             <span id="stayCalmCount" class="count">0</span>
             <button id="increaseBtn" class="round-btn">+</button>
           </div>
+        </section>
+        <section class="challenge-card">
+          <div class="challenge-head">
+            <div class="challenge-title">21일 챌린지 연속 달성 현황</div>
+            <div id="challengeStreak" class="challenge-streak">0일 연속</div>
+          </div>
+          <div id="challengeGrid" class="challenge-grid"></div>
+          <div id="challengeNote" class="challenge-note">오늘 산책을 완료하면 1칸이 채워져요.</div>
         </section>
       </section>
     </main>
@@ -326,17 +585,86 @@
       </div>
     </section>
 
+    <section id="resultModal" class="modal hidden">
+      <div class="modal-card" style="max-width: 520px;">
+        <div class="modal-head">
+          <h3 style="margin: 0; letter-spacing: 0.04em;">산책 결과 카드</h3>
+          <button id="closeResultBtn" class="close-btn">닫기</button>
+        </div>
+        <div id="walkResultFrame" class="walk-result-frame">
+          <div class="result-brand">DOGLOW STAY CALM</div>
+          <div class="result-tag">@doglow_coach</div>
+          <div class="result-title">오늘의 산책 리포트</div>
+          <div class="result-grid">
+            <div class="result-item"><div class="k">산책 날짜</div><div id="resultDate" class="v">-</div></div>
+            <div class="result-item"><div class="k">산책 시간</div><div id="resultTime" class="v">00:00</div></div>
+            <div class="result-item"><div class="k">이동 거리</div><div id="resultDistance" class="v">0.00 km</div></div>
+            <div class="result-item"><div class="k">배변 횟수</div><div id="resultPoop" class="v">0회</div></div>
+            <div class="result-item"><div class="k">불안/흥분 체크</div><div id="resultAnxious" class="v">0회</div></div>
+            <div class="result-item"><div class="k">차분하게 걷기</div><div id="resultCalm" class="v">0회</div></div>
+          </div>
+          <div class="result-footer">
+            <div style="font-size: 12px; color: var(--hud-muted);">DOGLOW STAY CALM</div>
+            <div style="font-size: 12px; color: var(--hud-muted);">@doglow_coach</div>
+          </div>
+        </div>
+        <div class="result-actions">
+          <a id="saveImageBtn" class="save-image-btn" href="#" download="doglow-walk-result.png">이미지 저장하기</a>
+        </div>
+        <form id="walkVerifyForm" class="verify-form">
+          <div class="verify-title">산책 인증 폼</div>
+          <div class="verify-field">
+            <label for="verifyPhoto" class="verify-label">사진 1장 업로드</label>
+            <input id="verifyPhoto" class="verify-input" type="file" accept="image/*" />
+          </div>
+          <div class="verify-field">
+            <label for="verifyMemo" class="verify-label">짧은 메모</label>
+            <textarea id="verifyMemo" class="verify-textarea" maxlength="120" placeholder="예: 오늘은 다른 개를 만나도 차분하게 잘 걸었어요."></textarea>
+          </div>
+          <button id="submitVerifyBtn" type="submit" class="verify-submit-btn">인증 저장하기</button>
+          <div id="verifyStatus" class="verify-status">산책 사진과 메모를 저장하면 베타 인증이 완료됩니다.</div>
+        </form>
+      </div>
+    </section>
+
+    <section id="anxiousCauseModalWrap" class="modal hidden">
+      <div id="anxiousCauseModal" class="cause-modal">
+        <div class="cause-title">불안/흥분 원인을 선택해 주세요</div>
+        <div class="cause-grid">
+          <button class="cause-btn" data-cause="오토바이">오토바이</button>
+          <button class="cause-btn" data-cause="다른 개">다른 개</button>
+          <button class="cause-btn" data-cause="큰 소리">큰 소리</button>
+          <button class="cause-btn" data-cause="사람">사람</button>
+          <button class="cause-btn" data-cause="기타">기타</button>
+        </div>
+        <button id="closeCauseModalBtn" class="cause-close">취소</button>
+      </div>
+    </section>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script>
       const STORAGE_KEY = "DOG_WALK_HISTORY_V1";
+      const CHALLENGE_KEY = "DOGLOW_21DAY_CHALLENGE_V1";
       const homeScreen = document.getElementById("homeScreen");
       const trackingScreen = document.getElementById("trackingScreen");
       const historyModal = document.getElementById("historyModal");
       const creatorModal = document.getElementById("creatorModal");
+      const resultModal = document.getElementById("resultModal");
+      const anxiousCauseModalWrap = document.getElementById("anxiousCauseModalWrap");
+      const anxiousCauseModal = document.getElementById("anxiousCauseModal");
+      const closeCauseModalBtn = document.getElementById("closeCauseModalBtn");
+      const closeResultBtn = document.getElementById("closeResultBtn");
+      const saveImageBtn = document.getElementById("saveImageBtn");
+      const walkResultFrame = document.getElementById("walkResultFrame");
+      const walkVerifyForm = document.getElementById("walkVerifyForm");
+      const verifyPhoto = document.getElementById("verifyPhoto");
+      const verifyMemo = document.getElementById("verifyMemo");
+      const verifyStatus = document.getElementById("verifyStatus");
       const startWalkBtn = document.getElementById("startWalkBtn");
       const historyBtn = document.getElementById("historyBtn");
       const creatorIntroBtn = document.getElementById("creatorIntroBtn");
@@ -358,6 +686,16 @@
       const historyDistance = document.getElementById("historyDistance");
       const historyPoop = document.getElementById("historyPoop");
       const historyAnxious = document.getElementById("historyAnxious");
+      const challengeGrid = document.getElementById("challengeGrid");
+      const challengeStreak = document.getElementById("challengeStreak");
+      const challengeNote = document.getElementById("challengeNote");
+      const resultDate = document.getElementById("resultDate");
+      const resultTime = document.getElementById("resultTime");
+      const resultDistance = document.getElementById("resultDistance");
+      const resultPoop = document.getElementById("resultPoop");
+      const resultAnxious = document.getElementById("resultAnxious");
+      const resultCalm = document.getElementById("resultCalm");
+      let latestWalkSummary = null;
 
       let calmCount = 0;
       let map;
@@ -373,7 +711,10 @@
       let totalDistanceMeters = 0;
       let poopEventCount = 0;
       let anxiousEventCount = 0;
+      let anxiousCauseLog = [];
       let eventMarkers = [];
+      let lastRecenterAt = 0;
+      let isCauseModalOpen = false;
       const path = [];
 
       function updateCount() { stayCalmCount.textContent = String(calmCount); }
@@ -414,6 +755,7 @@
         totalDistanceMeters = 0;
         poopEventCount = 0;
         anxiousEventCount = 0;
+        anxiousCauseLog = [];
         startTime = new Date();
         walkDate.textContent = startTime.toLocaleString("ko-KR", {
           year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
@@ -429,11 +771,17 @@
       function initMap() {
         if (map) return;
         map = L.map("map", { zoomControl: false });
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+          maxZoom: 20, attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
         }).addTo(map);
         map.setView([37.5665, 126.978], 16);
-        pathLine = L.polyline([], { color: "#ff6b00", weight: 6, opacity: 0.95 }).addTo(map);
+        pathLine = L.polyline([], {
+          color: "#ff6fae",
+          weight: 7,
+          opacity: 0.92,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(map);
       }
 
       function startTracking() {
@@ -452,10 +800,23 @@
               if (segment < 150) totalDistanceMeters += segment;
             }
             path.push(point);
-            if (!marker) marker = L.marker(point).addTo(map);
+            if (!marker) {
+              const cuteWalkIcon = L.divIcon({
+                className: "event-point",
+                html: `<div style="background:#ff8cc6;color:#fff;border-radius:999px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.25)">🐾</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15],
+              });
+              marker = L.marker(point, { icon: cuteWalkIcon }).addTo(map);
+            }
             else marker.setLatLng(point);
             pathLine.setLatLngs(path);
-            map.setView(point, 18);
+            // 자동 카메라 이동을 제한해 버튼 클릭 시 체감 렉을 줄임
+            const now = Date.now();
+            if (!isCauseModalOpen && (!lastRecenterAt || now - lastRecenterAt > 2500)) {
+              map.setView(point, 18, { animate: false });
+              lastRecenterAt = now;
+            }
             updateWalkSummary();
             gpsStatus.textContent = `추적중 · 정확도 ${Math.round(position.coords.accuracy)}m`;
           },
@@ -472,7 +833,7 @@
         if (timerId) { clearInterval(timerId); timerId = null; }
       }
 
-      function addEventPoint(type) {
+      function addEventPoint(type, cause = null) {
         if (!map || !lastPosition) {
           gpsStatus.textContent = "아직 위치를 받지 못했습니다. 잠시 후 다시 눌러주세요.";
           return;
@@ -486,15 +847,99 @@
           iconSize: [28, 28], iconAnchor: [14, 14],
         });
         if (type === "poop") poopEventCount += 1;
-        else anxiousEventCount += 1;
+        else {
+          anxiousEventCount += 1;
+          anxiousCauseLog.push({
+            cause: cause || "미분류",
+            at: new Date().toISOString(),
+            position: { lat: lastPosition[0], lng: lastPosition[1] },
+          });
+        }
         updateWalkSummary();
-        const eventMarker = L.marker(lastPosition, { icon }).addTo(map).bindPopup(config.label);
+        const popupText = type === "anxious" && cause ? `${config.label} (${cause})` : config.label;
+        const eventMarker = L.marker(lastPosition, { icon }).addTo(map).bindPopup(popupText);
         eventMarkers.push(eventMarker);
       }
 
       function getHistory() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
         catch { return []; }
+      }
+
+      function getLocalDateKey(date = new Date()) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+
+      function parseDateKey(dateKey) {
+        const [y, m, d] = dateKey.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function getChallengeData() {
+        try {
+          const raw = JSON.parse(localStorage.getItem(CHALLENGE_KEY) || "{}");
+          return {
+            challengeStartDate: raw.challengeStartDate || null,
+            completedDates: Array.isArray(raw.completedDates) ? raw.completedDates : [],
+          };
+        } catch {
+          return { challengeStartDate: null, completedDates: [] };
+        }
+      }
+
+      function setChallengeData(data) {
+        localStorage.setItem(CHALLENGE_KEY, JSON.stringify(data));
+      }
+
+      function calculateStreak(completedDates) {
+        const dateSet = new Set(completedDates);
+        let streak = 0;
+        const cursor = new Date();
+        while (true) {
+          const key = getLocalDateKey(cursor);
+          if (!dateSet.has(key)) break;
+          streak += 1;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        return streak;
+      }
+
+      function renderChallengeStatus() {
+        const data = getChallengeData();
+        const streak = Math.min(21, calculateStreak(data.completedDates));
+        challengeGrid.innerHTML = "";
+        for (let i = 1; i <= 21; i += 1) {
+          const dot = document.createElement("div");
+          dot.className = `challenge-day${i <= streak ? " done" : ""}`;
+          dot.textContent = i <= streak ? "✓" : String(i);
+          challengeGrid.appendChild(dot);
+        }
+        challengeStreak.textContent = `${streak}일 연속`;
+        if (streak >= 21) {
+          challengeNote.textContent = "21일 챌린지 완료! 정말 멋져요.";
+        } else if (streak > 0) {
+          challengeNote.textContent = `${21 - streak}일 더 달성하면 챌린지 완료!`;
+        } else {
+          challengeNote.textContent = "오늘 산책을 완료하면 1칸이 채워져요.";
+        }
+      }
+
+      function markChallengeCompletionToday() {
+        const todayKey = getLocalDateKey();
+        const data = getChallengeData();
+        const completedSet = new Set(data.completedDates);
+        completedSet.add(todayKey);
+
+        let challengeStartDate = data.challengeStartDate;
+        if (!challengeStartDate) {
+          challengeStartDate = todayKey;
+        }
+
+        const completedDates = Array.from(completedSet).sort((a, b) => parseDateKey(a) - parseDateKey(b));
+        setChallengeData({ challengeStartDate, completedDates });
       }
 
       function saveCurrentWalk() {
@@ -506,16 +951,36 @@
           totalDistanceMeters,
           poopEventCount,
           anxiousEventCount,
+          anxiousCauseLog,
+          calmCount,
           path,
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 30)));
       }
 
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("이미지 파일을 읽지 못했습니다."));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function buildResultImage() {
+        const canvas = await html2canvas(walkResultFrame, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+        });
+        saveImageBtn.href = canvas.toDataURL("image/png");
+      }
+
       function initHistoryMap() {
         if (historyMap) return;
         historyMap = L.map("historyMap", { zoomControl: false });
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+          maxZoom: 20, attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
         }).addTo(historyMap);
         historyMap.setView([37.5665, 126.978], 12);
       }
@@ -538,9 +1003,11 @@
           if (!walk.path || walk.path.length < 2) return;
           const hue = 15 + ((index * 35) % 260);
           const layer = L.polyline(walk.path, {
-            color: `hsl(${hue}, 95%, 58%)`,
-            weight: 4,
-            opacity: 0.8,
+            color: `hsl(${hue}, 95%, 62%)`,
+            weight: 5,
+            opacity: 0.85,
+            lineCap: "round",
+            lineJoin: "round",
           }).addTo(historyMap);
           historyLayers.push(layer);
           walk.path.forEach(point => bounds.push(point));
@@ -570,13 +1037,57 @@
       });
 
       poopPointBtn.addEventListener("click", () => addEventPoint("poop"));
-      anxiousPointBtn.addEventListener("click", () => addEventPoint("anxious"));
+      anxiousPointBtn.addEventListener("click", () => {
+        isCauseModalOpen = true;
+        anxiousCauseModalWrap.classList.remove("hidden");
+        requestAnimationFrame(() => anxiousCauseModal.classList.add("open"));
+      });
+
+      document.querySelectorAll(".cause-btn").forEach(button => {
+        button.addEventListener("click", event => {
+          const cause = event.currentTarget.getAttribute("data-cause");
+          addEventPoint("anxious", cause);
+          anxiousCauseModal.classList.remove("open");
+          setTimeout(() => {
+            anxiousCauseModalWrap.classList.add("hidden");
+            isCauseModalOpen = false;
+          }, 180);
+        });
+      });
+
+      closeCauseModalBtn.addEventListener("click", () => {
+        anxiousCauseModal.classList.remove("open");
+        setTimeout(() => {
+          anxiousCauseModalWrap.classList.add("hidden");
+          isCauseModalOpen = false;
+        }, 180);
+      });
 
       endWalkBtn.addEventListener("click", () => {
         stopTracking();
         saveCurrentWalk();
+        markChallengeCompletionToday();
+        renderChallengeStatus();
         homeScreen.classList.remove("hidden");
         trackingScreen.classList.add("hidden");
+        resultDate.textContent = walkDate.textContent;
+        resultTime.textContent = formatElapsed(elapsedSeconds);
+        resultDistance.textContent = `${(totalDistanceMeters / 1000).toFixed(2)} km`;
+        resultPoop.textContent = `${poopEventCount}회`;
+        resultAnxious.textContent = `${anxiousEventCount}회`;
+        resultCalm.textContent = `${calmCount}회`;
+        latestWalkSummary = {
+          date: walkDate.textContent,
+          time: formatElapsed(elapsedSeconds),
+          distanceKm: (totalDistanceMeters / 1000).toFixed(2),
+          poopEventCount,
+          anxiousEventCount,
+          calmCount,
+        };
+        walkVerifyForm.reset();
+        verifyStatus.textContent = "산책 사진과 메모를 저장하면 베타 인증이 완료됩니다.";
+        resultModal.classList.remove("hidden");
+        buildResultImage();
       });
 
       historyBtn.addEventListener("click", () => {
@@ -595,6 +1106,48 @@
       closeCreatorBtn.addEventListener("click", () => {
         creatorModal.classList.add("hidden");
       });
+
+      closeResultBtn.addEventListener("click", () => {
+        resultModal.classList.add("hidden");
+      });
+
+      walkVerifyForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        try {
+          const photoFile = verifyPhoto.files && verifyPhoto.files[0];
+          const memo = verifyMemo.value.trim();
+
+          if (!latestWalkSummary) {
+            verifyStatus.textContent = "산책 결과가 없어 인증을 저장할 수 없습니다.";
+            return;
+          }
+          if (!photoFile) {
+            verifyStatus.textContent = "사진 1장을 업로드해 주세요.";
+            return;
+          }
+          if (memo.length === 0) {
+            verifyStatus.textContent = "짧은 메모를 입력해 주세요.";
+            return;
+          }
+
+          verifyStatus.textContent = "저장 중...";
+          const photoDataUrl = await fileToDataUrl(photoFile);
+          const raw = localStorage.getItem("DOGLOW_WALK_VERIFICATIONS_V1");
+          const verifications = raw ? JSON.parse(raw) : [];
+          verifications.unshift({
+            createdAt: new Date().toISOString(),
+            ...latestWalkSummary,
+            memo,
+            photoDataUrl,
+          });
+          localStorage.setItem("DOGLOW_WALK_VERIFICATIONS_V1", JSON.stringify(verifications.slice(0, 30)));
+          verifyStatus.textContent = "인증이 저장되었습니다. 내일도 산책 인증 화이팅!";
+        } catch (error) {
+          verifyStatus.textContent = "저장 중 오류가 발생했습니다. 다시 시도해 주세요.";
+        }
+      });
+
+      renderChallengeStatus();
     </script>
   </body>
 </html>
