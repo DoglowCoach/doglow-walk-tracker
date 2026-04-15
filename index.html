@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030914" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DOGLOW" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./doglow-logo.png" />
     <title>반려견 산책 트래커</title>
     <link
       rel="stylesheet"
@@ -430,6 +436,24 @@
         padding-top: 12px;
         border-top: 1px solid rgba(101, 242, 255, 0.22);
       }
+      .route-preview-box {
+        margin-top: 10px;
+        border: 1px solid rgba(101, 242, 255, 0.22);
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(7, 18, 32, 0.85);
+      }
+      .route-preview-title {
+        font-size: 11px;
+        color: var(--hud-muted);
+        padding: 6px 8px;
+        border-bottom: 1px solid rgba(101, 242, 255, 0.16);
+      }
+      .route-preview-canvas {
+        width: 100%;
+        height: 120px;
+        display: block;
+      }
       .verify-form {
         margin-top: 12px;
         padding: 12px;
@@ -603,6 +627,10 @@
             <div class="result-item"><div class="k">불안/흥분 체크</div><div id="resultAnxious" class="v">0회</div></div>
             <div class="result-item"><div class="k">차분하게 걷기</div><div id="resultCalm" class="v">0회</div></div>
           </div>
+          <div class="route-preview-box">
+            <div class="route-preview-title">산책 로드맵</div>
+            <canvas id="resultRouteCanvas" class="route-preview-canvas" width="360" height="120"></canvas>
+          </div>
           <div class="result-footer">
             <div style="font-size: 12px; color: var(--hud-muted);">DOGLOW STAY CALM</div>
             <div style="font-size: 12px; color: var(--hud-muted);">@doglow_coach</div>
@@ -661,6 +689,7 @@
       const closeResultBtn = document.getElementById("closeResultBtn");
       const saveImageBtn = document.getElementById("saveImageBtn");
       const walkResultFrame = document.getElementById("walkResultFrame");
+      const resultRouteCanvas = document.getElementById("resultRouteCanvas");
       const walkVerifyForm = document.getElementById("walkVerifyForm");
       const verifyPhoto = document.getElementById("verifyPhoto");
       const verifyMemo = document.getElementById("verifyMemo");
@@ -967,6 +996,63 @@
         });
       }
 
+      function drawRoutePreview(routePath, canvas) {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const { width, height } = canvas;
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "#081629";
+        ctx.fillRect(0, 0, width, height);
+
+        if (!routePath || routePath.length < 2) {
+          ctx.fillStyle = "#7ea3b8";
+          ctx.font = "12px sans-serif";
+          ctx.fillText("로드맵 데이터 없음", 12, 20);
+          return;
+        }
+
+        const lats = routePath.map(point => point[0]);
+        const lngs = routePath.map(point => point[1]);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        const pad = 12;
+        const usableW = width - pad * 2;
+        const usableH = height - pad * 2;
+        const latRange = maxLat - minLat || 0.00001;
+        const lngRange = maxLng - minLng || 0.00001;
+
+        const normalize = point => {
+          const x = pad + ((point[1] - minLng) / lngRange) * usableW;
+          const y = height - (pad + ((point[0] - minLat) / latRange) * usableH);
+          return [x, y];
+        };
+
+        ctx.strokeStyle = "#ff6fae";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        routePath.forEach((point, index) => {
+          const [x, y] = normalize(point);
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        const [sx, sy] = normalize(routePath[0]);
+        const [ex, ey] = normalize(routePath[routePath.length - 1]);
+        ctx.fillStyle = "#65f2ff";
+        ctx.beginPath();
+        ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff7a1a";
+        ctx.beginPath();
+        ctx.arc(ex, ey, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       async function buildResultImage() {
         const canvas = await html2canvas(walkResultFrame, {
           backgroundColor: null,
@@ -1084,6 +1170,7 @@
           anxiousEventCount,
           calmCount,
         };
+        drawRoutePreview(path, resultRouteCanvas);
         walkVerifyForm.reset();
         verifyStatus.textContent = "산책 사진과 메모를 저장하면 베타 인증이 완료됩니다.";
         resultModal.classList.remove("hidden");
@@ -1134,11 +1221,13 @@
           const photoDataUrl = await fileToDataUrl(photoFile);
           const raw = localStorage.getItem("DOGLOW_WALK_VERIFICATIONS_V1");
           const verifications = raw ? JSON.parse(raw) : [];
+          const routeMapDataUrl = resultRouteCanvas.toDataURL("image/png");
           verifications.unshift({
             createdAt: new Date().toISOString(),
             ...latestWalkSummary,
             memo,
             photoDataUrl,
+            routeMapDataUrl,
           });
           localStorage.setItem("DOGLOW_WALK_VERIFICATIONS_V1", JSON.stringify(verifications.slice(0, 30)));
           verifyStatus.textContent = "인증이 저장되었습니다. 내일도 산책 인증 화이팅!";
@@ -1148,6 +1237,14 @@
       });
 
       renderChallengeStatus();
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {
+            // 서비스워커 등록 실패 시에도 앱 동작에는 영향 없도록 무시
+          });
+        });
+      }
     </script>
   </body>
 </html>
